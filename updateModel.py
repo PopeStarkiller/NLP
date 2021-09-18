@@ -52,10 +52,18 @@ neg_string = querry_string_base + ' 0 ORDER BY RANDOM() LIMIT ' + f'{min_count}'
 pos_string = querry_string_base + ' 1 ORDER BY RANDOM() LIMIT ' + f'{min_count}'
 model_df = pd.concat([pd.read_sql_query(neg_string, con=engine), pd.read_sql_query(pos_string, con=engine)])
 
-x_twt = model_df['joined_lemm']
+x_twt = model_df[['joined_lemm','id']]
 y_twt = model_df['sentiments']
 X_train, X_test, y_train, y_test = train_test_split(x_twt, y_twt, test_size=0.2)
 X_test, X_val, y_test, y_val = train_test_split(X_test, y_test, test_size=0.2)
+vectorizer = TfidfVectorizer()
+id_train_twt = X_train['id']
+id_test_twt = X_test['id']
+id_val_twt = X_val['id']
+X_train = X_train['joined_lemm']
+X_test = X_test['joined_lemm']
+X_val = X_val['joined_lemm']
+
 vectorizer = TfidfVectorizer()
 vectorizer.fit(X_train)
 vectorized_train = vectorizer.transform(X_train).toarray()
@@ -104,10 +112,18 @@ review_composite_df = pd.read_sql_query('select joined_lemm, sentiments from sen
 
 final_composite_df = pd.concat([tweet_composite_df, review_composite_df])
 
-x_com = final_composite_df['joined_lemm']
-y_com = final_composite_df['sentiments']
+x_com = model_df[['joined_lemm','id']]
+y_com = model_df['sentiments']
 X_train, X_test, y_train, y_test = train_test_split(x_com, y_com, test_size=0.2)
 X_test, X_val, y_test, y_val = train_test_split(X_test, y_test, test_size=0.2)
+vectorizer = TfidfVectorizer()
+id_train_com = X_train['id']
+id_test_com = X_test['id']
+id_val_com = X_val['id']
+X_train = X_train['joined_lemm']
+X_test = X_test['joined_lemm']
+X_val = X_val['joined_lemm']
+
 vectorizer = TfidfVectorizer()
 vectorizer.fit(X_train)
 vectorized_train = vectorizer.transform(X_train).toarray()
@@ -165,10 +181,18 @@ comp_df['sentiments'] = df.sentiments.apply(lambda x: 0 if x in ['0'] else 0)
 
 adjudicator_df = pd.concat([comp_df,filter_df])
 
-x_adj = adjudicator_df['joined_lemm']
-y_adj = adjudicator_df['sentiments']
+x_adj = model_df[['joined_lemm','id']]
+y_adj = model_df['sentiments']
 X_train, X_test, y_train, y_test = train_test_split(x_adj, y_adj, test_size=0.2)
 X_test, X_val, y_test, y_val = train_test_split(X_test, y_test, test_size=0.2)
+vectorizer = TfidfVectorizer()
+id_train_adj = X_train['id']
+id_test_adj = X_test['id']
+id_val_adj = X_val['id']
+X_train = X_train['joined_lemm']
+X_test = X_test['joined_lemm']
+X_val = X_val['joined_lemm']
+
 vectorizer = TfidfVectorizer()
 vectorizer.fit(X_train)
 vectorized_train = vectorizer.transform(X_train).toarray()
@@ -240,19 +264,7 @@ v_functions.plot_cm("Adjudicator Confusion Matrix", v_functions.cmFile_adj,y_act
 
 
 
-def pre_rec(y_actual,x_predict):
-    cm = confusion_matrix(y_actual,x_predict > .5)
-    upper_p = cm[1][1]
-    lower_p = cm[1][1] + cm[0][1]
-    precision = 42
-    if lower_p != 0:
-        precision = upper_p / lower_p
-    upper_r = cm[1][1]
-    lower_r = cm[1][1] + cm[1][0]
-    recall = 42
-    if lower_r != 0:
-        recall = upper_r / lower_r
-    return (precision, recall)
+
 # plt.figure(figsize=(20,10))
 # v_functions.plot_delta_auc("Delta AUC",y_actual_twt,x_predict_twt,color=colors[1])
 
@@ -297,6 +309,9 @@ if steve != 0:
     x_predict_twt_real = df2['predicted_sentiments_twt']
     x_predict_com_real = df2['predicted_sentiments_com']
     y_actual_real = df2['sentiments']
+
+    from v_functions import pre_rec
+    
     precision_adj_real, recall_adj_real = pre_rec(y_actual_adj_real,x_predict_adj_real)
 
     precision_twt_real, recall_twt_real = pre_rec(y_actual_real,x_predict_twt_real)
@@ -384,6 +399,21 @@ with conn:
         "date":date,
         }])
 
+version_data = Table('version_data', metadata, autoload=True, autoload_with=engine)
 
+conn = engine.connect()
+with conn:
+    conn.execute(insert(version_data),[{
+        "version":version,
+        "twt_train":id_train_twt.tolist(),
+        "twt_test":id_test_twt.tolist(),
+        "twt_val":id_val_twt.tolist(),
+        "com_train":id_train_com.tolist(),
+        "com_test":id_test_com.tolist(),
+        "com_val":id_val_com.tolist(),
+        "adj_train":id_train_adj.tolist(),
+        "adj_test":id_test_adj.tolist(),
+        "adj_val":id_val_adj.tolist(),
 
+        }])
 
