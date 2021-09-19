@@ -73,7 +73,7 @@ norm = Normalizer().fit(vectorized_train)
 norm_vectorized_train = norm.transform(vectorized_train)
 norm_vectorized_test = norm.transform(vectorized_test)
 norm_vectorized_val = norm.transform(vectorized_val)
-pickle.dump(vectorizer, open("Resources/vectorizers/tweet_vectorizer.pickle", "wb"))
+tweet_vectorizer = pickle.dump(vectorizer, open("tweet_vectorizer.pickle", "wb"))
 
 train_labels_twt = np.array(y_train)
 bool_train_labels_twt = train_labels_twt != 0
@@ -100,7 +100,9 @@ baseline_history = model_twt.fit(
     epochs=EPOCHS,
     validation_data=(test_features_twt, test_labels_twt),
     callbacks=[early_stopping])
-model_twt.save("Resources/models/deep_sentiment_twitter_model_trained.h5", save_format='tf')
+filename = "deep_sentiment_twitter_model_trained.sav"
+model_twt_pkl = pickle.dump(model_twt, open(filename, 'wb'))
+# model_twt.save("Resources/models/deep_sentiment_twitter_model_trained.h5", save_format='tf')
 x_predict_twt = model_twt.predict(val_features_twt)
 y_actual_twt = val_labels_twt
 
@@ -133,7 +135,7 @@ norm = Normalizer().fit(vectorized_train)
 norm_vectorized_train = norm.transform(vectorized_train)
 norm_vectorized_test = norm.transform(vectorized_test)
 norm_vectorized_val = norm.transform(vectorized_val)
-pickle.dump(vectorizer, open("Resources/vectorizers/composite_vectorizer.pickle", "wb"))
+composite_vectorizer = pickle.dump(vectorizer, open("composite_vectorizer.pickle", "wb"))
 
 train_labels_com = np.array(y_train)
 bool_train_labels_com = train_labels_com != 0
@@ -161,7 +163,9 @@ baseline_history = model_com.fit(
     epochs=EPOCHS,
     validation_data=(test_features_com, test_labels_com),
     callbacks=[early_stopping])
-model_com.save("Resources/models/deep_sentiment_composite_model_trained.h5", save_format='tf')
+filename2 = "deep_sentiment_composite_model_trained.sav"
+model_com_pkl = pickle.dump(model_com, open(filename2, 'wb'))
+# model_com.save("Resources/models/deep_sentiment_composite_model_trained.h5", save_format='tf')
 
 x_predict_com = model_com.predict(val_features_com)
 y_actual_com = val_labels_com
@@ -202,7 +206,7 @@ norm = Normalizer().fit(vectorized_train)
 norm_vectorized_train = norm.transform(vectorized_train)
 norm_vectorized_test = norm.transform(vectorized_test)
 norm_vectorized_val = norm.transform(vectorized_val)
-pickle.dump(vectorizer, open("Resources/vectorizers/adjudication_vectorizer.pickle", "wb"))
+adjudication_vectorizer = pickle.dump(vectorizer, open("adjudication_vectorizer.pickle", "wb"))
 
 train_labels_adj = np.array(y_train)
 bool_train_labels_adj = train_labels_adj != 0
@@ -230,7 +234,9 @@ baseline_history = model_adj.fit(
     epochs=EPOCHS,
     validation_data=(test_features_adj, test_labels_adj),
     callbacks=[early_stopping])
-model_adj.save("Resources/models/deep_adjudicator_model_trained.h5", save_format='tf')
+filename = "deep_adjudicator_model_trained.sav"
+model_adj_pkl = pickle.dump(model_adj, open(filename, 'wb'))
+# model_adj.save("Resources/models/deep_adjudicator_model_trained.h5", save_format='tf')
 
 x_predict_adj = model_adj.predict(val_features_adj)
 y_actual_adj = val_labels_adj
@@ -311,7 +317,7 @@ if steve != 0:
     y_actual_real = df2['sentiments']
 
     from v_functions import pre_rec
-    
+
     precision_adj_real, recall_adj_real = pre_rec(y_actual_adj_real,x_predict_adj_real)
 
     precision_twt_real, recall_twt_real = pre_rec(y_actual_real,x_predict_twt_real)
@@ -414,6 +420,11 @@ with conn:
         "adj_train":id_train_adj.tolist(),
         "adj_test":id_test_adj.tolist(),
         "adj_val":id_val_adj.tolist(),
-
+        "model_twt":model_twt_pkl,
+        "model_com":model_com_pkl,
+        "model_adj":model_adj_pkl,
+        "vectorizer_twt":tweet_vectorizer,
+        "vectorizer_com":composite_vectorizer,
+        "vectorizer_adj":adjudication_vectorizer,
         }])
 
