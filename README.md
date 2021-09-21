@@ -1,6 +1,6 @@
-# Twitter Sentiment Analysis Model
+# Twitter NLP Analysis Models
 
-created by Danielle Martin, Jordan Roessle, Robert Gramlich, Sunwoo Kim
+created by Robert Gramlich
 
 ![Twitter Sentiment Image](https://miro.medium.com/max/1400/1*0P55fknrgWKxG0gfwAGCvw.png)
 
@@ -32,9 +32,9 @@ created by Danielle Martin, Jordan Roessle, Robert Gramlich, Sunwoo Kim
 
 ## Project Description
 
-The Sentiment Analysis Model project aims to create a neural network that can predict the sentiment (positive - 1 or negative - 0) of tweets from Twitter. The model is trained and tested on a IMDB movie reviews dataset with prescribed positive or negative rankings. This model is then paired with Twitter's API to make sentiment predictions on tweets. 
+The NLP Analysis Model project aims to create a series of neural networks that can predict the sentiment, or lack of sentiment, for tweets from Twitter. The first model is trained, tested, and validated on a IMDB movie reviews dataset with prescribed positive or negative rankings. This model will have its metrics tested to determine the validity of using non twitter contexualized data.  The sequential models following the data collection process will be an NLP adjudication model, and pure Twitter data model, and a composite model of twitter and rewiew data. The purpose of the adjudication model is to act as a filter for non sentiment related language such as advertisements, AI's, and descriptive language. The pure twitter model, like the composite model, exists to test the various models against each other based upon their data used. 
 
-Our Sentiment Analysis application includes a level of interactivity through Flask and JavaScript D3. Each tweet that is classified by the user is then pushed along with the classification and time stamp into a SQL database. This data is stored and will later be used to retrain the model to improve its predictive power.
+My NLP Analysis application includes a level of interactivity through Flask and JavaScript D3. Each tweet that is classified by the user is then pushed along with the classification and time stamp into an AWS RDS Postgresql database. Also stored are the various metrics used to benchmark the success of these models such as ROC data, AUC data, precision, and recall.  Also stored in the database are all the various models and their vectorizers in a pickle bytea format. I have also included the version numbers for all the models along with all the id's used in the train test split so any model's components may be analyzed from every angle as well as be rebuilt. I've further created logic to test how the versions performed during their batch epochs and stored the metrics as well.
 
 
 
@@ -65,7 +65,7 @@ To get a local copy up and running follow these simple steps.
    ```
 2. Set up PostgreSQL database and establish connection 
    ```sh
-   rds_connection_string = "postgres:password@localhost:5432/sentiment_db"
+   rds_connection_string = "user:password@{AWS server}:5432/sentiment_db"
    engine = create_engine(f'postgresql://{rds_connection_string}')
    conn = engine.connect()
    session = Session(bind=engine)
@@ -76,7 +76,7 @@ To get a local copy up and running follow these simple steps.
 <!-- USAGE EXAMPLES -->
 ## Usage
 
-User grabs a tweet by giving the keyword selection an input. Once the tweet has been loaded onto the webpage, the user selects whether they consider the tweet to be positive or negative in sentiment. The model then makes a prediction on the same tweet thereafter to compare to the user's selection. 
+User grabs a tweet by giving the keyword selection an input. Once the tweet has been loaded onto the webpage, the user selects whether they consider the tweet to be neutral, positive, or negative in sentiment. Based upon the sum of data collected, various models will make predictions.  The adjudication model will always make a prediction. The other models however will only make predictions if the tweet is declared to have sentiment. I feel it illogical to use resources predicting sentiment on a tweet that has none. 
 
 ![Screenshot of Sentiment Analysis Application](https://github.com/sunwoo-kim20/sentiment-analysis-final-project/blob/main/static/images/voting_page.png?raw=true)
 
@@ -89,5 +89,5 @@ User grabs a tweet by giving the keyword selection an input. Once the tweet has 
 ## Contact
 
 
-[Project Link](https://github.com/sunwoo-kim20/sentiment-analysis-final-project)
+[Project Link](https://github.com/PopeStarkiller/NLP)
 
