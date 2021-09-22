@@ -102,7 +102,7 @@ baseline_history = model_twt.fit(
     callbacks=[early_stopping])
 filename = "deep_sentiment_twitter_model_trained.sav"
 model_twt_pkl = pickle.dump(model_twt, open(filename, 'wb'))
-# model_twt.save("Resources/models/deep_sentiment_twitter_model_trained.h5", save_format='tf')
+model_twt.save("Resources/models/deep_sentiment_twitter_model_trained.h5", save_format='tf')
 x_predict_twt = model_twt.predict(val_features_twt)
 y_actual_twt = val_labels_twt
 
@@ -165,7 +165,7 @@ baseline_history = model_com.fit(
     callbacks=[early_stopping])
 filename2 = "deep_sentiment_composite_model_trained.sav"
 model_com_pkl = pickle.dump(model_com, open(filename2, 'wb'))
-# model_com.save("Resources/models/deep_sentiment_composite_model_trained.h5", save_format='tf')
+model_com.save("Resources/models/deep_sentiment_composite_model_trained.h5", save_format='tf')
 
 x_predict_com = model_com.predict(val_features_com)
 y_actual_com = val_labels_com
@@ -236,7 +236,7 @@ baseline_history = model_adj.fit(
     callbacks=[early_stopping])
 filename = "deep_adjudicator_model_trained.sav"
 model_adj_pkl = pickle.dump(model_adj, open(filename, 'wb'))
-# model_adj.save("Resources/models/deep_adjudicator_model_trained.h5", save_format='tf')
+model_adj.save("Resources/models/deep_adjudicator_model_trained.h5", save_format='tf')
 
 x_predict_adj = model_adj.predict(val_features_adj)
 y_actual_adj = val_labels_adj
