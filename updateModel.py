@@ -26,6 +26,8 @@ psycopg2.extensions.register_adapter(np.int64, psycopg2._psycopg.AsIs)
 
 METRICS = METRICS
 
+
+
 engine = create_engine(f'postgresql://{rds_connection_string}')
 conn = engine.connect()
 
@@ -35,6 +37,11 @@ tweet_data = Table('tweet_data', metadata, autoload=True, autoload_with=engine)
 wn = nltk.WordNetLemmatizer()
 string.punctuation
 stop = stopwords.words('english')
+
+batch_df = pd.read_sql_query('select batch_max, version from stats_data', con=engine)
+steve = len(batch_df)
+version = steve + 1
+
 
 neg = len(pd.read_sql_query('select sentiments from tweet_sentiment WHERE tweet_sentiment.sentiments = 0 LIMIT 2500', con=engine))
 pos = len(pd.read_sql_query('select sentiments from tweet_sentiment WHERE tweet_sentiment.sentiments = 1 LIMIT 2500', con=engine))
@@ -100,9 +107,10 @@ baseline_history = model_twt.fit(
     epochs=EPOCHS,
     validation_data=(test_features_twt, test_labels_twt),
     callbacks=[early_stopping])
-filename = "deep_sentiment_twitter_model_trained.sav"
-model_twt_pkl = pickle.dump(model_twt, open(filename, 'wb'))
-model_twt.save("Resources/models/deep_sentiment_twitter_model_trained.h5", save_format='tf')
+# filename = "deep_sentiment_twitter_model_trained.sav"
+# model_twt_pkl = pickle.dump(model_twt, open(filename, 'wb'))
+t_mdl = v_functions.t_model_string + str(version) + ".h5"
+model_twt.save(t_mdl, save_format='tf')
 x_predict_twt = model_twt.predict(val_features_twt)
 y_actual_twt = val_labels_twt
 
@@ -163,9 +171,10 @@ baseline_history = model_com.fit(
     epochs=EPOCHS,
     validation_data=(test_features_com, test_labels_com),
     callbacks=[early_stopping])
-filename2 = "deep_sentiment_composite_model_trained.sav"
-model_com_pkl = pickle.dump(model_com, open(filename2, 'wb'))
-model_com.save("Resources/models/deep_sentiment_composite_model_trained.h5", save_format='tf')
+# filename2 = "deep_sentiment_composite_model_trained.sav"
+# model_com_pkl = pickle.dump(model_com, open(filename2, 'wb'))
+c_mdl = v_functions.c_model_string + str(version) + ".h5"
+model_com.save(c_mdl, save_format='tf')
 
 x_predict_com = model_com.predict(val_features_com)
 y_actual_com = val_labels_com
@@ -234,9 +243,10 @@ baseline_history = model_adj.fit(
     epochs=EPOCHS,
     validation_data=(test_features_adj, test_labels_adj),
     callbacks=[early_stopping])
-filename = "deep_adjudicator_model_trained.sav"
-model_adj_pkl = pickle.dump(model_adj, open(filename, 'wb'))
-model_adj.save("Resources/models/deep_adjudicator_model_trained.h5", save_format='tf')
+# filename = "deep_adjudicator_model_trained.sav"
+# model_adj_pkl = pickle.dump(model_adj, open(filename, 'wb'))
+a_mdl = v_functions.a_model_string + str(version) + ".h5"
+model_adj.save(a_mdl, save_format='tf')
 
 x_predict_adj = model_adj.predict(val_features_adj)
 y_actual_adj = val_labels_adj
@@ -278,8 +288,7 @@ v_functions.plot_cm("Adjudicator Confusion Matrix", v_functions.cmFile_adj,y_act
 # plt.figure(figsize=(10,10))
 # v_functions.plot_prc("PRC", y_actual_twt, x_predict_twt, color=colors[2])
 date = datetime.now()
-batch_df = pd.read_sql_query('select batch_max, version from stats_data', con=engine)
-steve = len(batch_df)
+
 batch_min = 1
 batch_max = pd.read_sql_query('select batch from tweet_sentiment', con=engine)['batch'].max()
 if steve != 0:
@@ -375,7 +384,7 @@ plt.figure(figsize=(15,7))
 v_functions.plot_roc("ROC", y_actual_twt, x_predict_twt, y_actual_com, x_predict_com, y_actual_adj, x_predict_adj)
 
 df = pd.read_sql_query('select predicted_sentiments_rd, predicted_sentiments_twt, predicted_sentiments_com, sentiments from tweet_sentiment', con=engine)
-version = steve + 1
+
 meta = MetaData()
 stats = Table('stats_data', metadata, autoload=True, autoload_with=engine)
 
@@ -420,11 +429,14 @@ with conn:
         "adj_train":id_train_adj.tolist(),
         "adj_test":id_test_adj.tolist(),
         "adj_val":id_val_adj.tolist(),
-        "model_twt":model_twt_pkl,
-        "model_com":model_com_pkl,
-        "model_adj":model_adj_pkl,
-        "vectorizer_twt":tweet_vectorizer,
-        "vectorizer_com":composite_vectorizer,
-        "vectorizer_adj":adjudication_vectorizer,
+        # "model_twt":model_twt_pkl,
+        # "model_com":model_com_pkl,
+        # "model_adj":model_adj_pkl,
+        # "vectorizer_twt":tweet_vectorizer,
+        # "vectorizer_com":composite_vectorizer,
+        # "vectorizer_adj":adjudication_vectorizer,
         }])
 
+if batch_df['batch_max']%20 != 0:
+    import tweet
+    tweet.api_call

@@ -65,16 +65,30 @@ def load_tweet():
 	df = pd.read_sql_query('select * from tweet_data WHERE tweet_data.holder = 1', con=conn)
 	df = df.iloc[0]
 	predicted_sentiments_adj = 42
-	if os.path.isfile("Resources/models/deep_adjudicator_model_trained.h5"):
-		predicted_sentiments_adj = predictAdjModel(df)
-
-	tweet_dict = {
-		"id":df['id'],
-		"tweet":df['tweet'],
-		"joined_lemm":df['joined_lemm'],
-		"batch":df['batch'],
-		"predicted_sentiments_adj":predicted_sentiments_adj
-		}
+	df_ver = pd.read_sql_query('select version from stats_data ORDER BY version DESC LIMIT 1', con=conn)
+	# version = str(df_ver['version'].max()) + ".h5"
+	stats_len = len(df_ver)
+	if stats_len > 0:
+		from v_functions import model_versions
+		length, err_list = model_versions()
+		if length != 3:
+			err_string = "The version of your model(s) is not compatible.  The model(s) that need(s) correcting is/are"
+			for i in err_list:
+				err_string += " " + i
+			help_string = ". Please git pull to update your repository in order to get the most up to date model(s)"
+			tweet_dict = {
+				"tweet":(err_string + help_string)
+			}
+		else:
+			predicted_sentiments_adj = predictAdjModel(df)
+	else:
+		tweet_dict = {
+			"id":df['id'],
+			"tweet":df['tweet'],
+			"joined_lemm":df['joined_lemm'],
+			"batch":df['batch'],
+			"predicted_sentiments_adj":predicted_sentiments_adj
+			}
 
 	return json.dumps(tweet_dict, cls=NpEncoder)
 

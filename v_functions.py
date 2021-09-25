@@ -159,32 +159,7 @@ def lema_tweetz(df,column):
     final_df['joined_lemm'] = df['joined_lemm']
     return final_df
 
-def predictModel(df):
-    with open('Resources/vectorizers/vectorizer.pickle', 'rb') as inp:
-        vectorize = pickle.load(inp)
-        model = load_model('Resources/models/deep_sentiment_model_trained_zenith.h5')
-        predict_me = vectorize.transform(df['joined_lemm']).toarray()
-        return float(model.predict(predict_me)[0][0])
 
-def predictTwtModel(df):
-    with open('Resources/vectorizers/tweet_vectorizer.pickle', 'rb') as inp:
-        tweet_vectorizer = pickle.load(inp)
-        model = load_model('Resources/models/deep_sentiment_twitter_model_trained.h5')
-        predict_me = tweet_vectorizer.transform(df['joined_lemm']).toarray()
-        return float(model.predict(predict_me)[0][0])
-
-def predictComModel(df):
-    with open('Resources/vectorizers/composite_vectorizer.pickle', 'rb') as inp:
-        composite_vectorizer = pickle.load(inp) 
-        model = load_model('Resources/models/deep_sentiment_composite_model_trained.h5')
-        predict_me = composite_vectorizer.transform(df['joined_lemm']).toarray()
-        return float(model.predict(predict_me)[0][0])
-def predictAdjModel(df):
-    with open('Resources/vectorizers/adjudication_vectorizer.pickle', 'rb') as inp:
-        composite_vectorizer = pickle.load(inp) 
-        model = load_model('Resources/models/deep_adjudicator_model_trained.h5')
-        predict_me = composite_vectorizer.transform([df['joined_lemm']]).toarray()
-        return float(model.predict(predict_me)[0][0])
 
 # if os.path.isfile("batch_strings.pickle"):
 #     with open('batch_strings.pickle', 'rb') as inp:
@@ -251,3 +226,85 @@ def make_model(train_features, metrics=METRICS, output_bias=None):
         metrics=metrics)
 
     return model  
+
+def pre_rec(y_actual,x_predict):
+    cm = confusion_matrix(y_actual,x_predict > .5)
+    upper_p = cm[1][1]
+    lower_p = cm[1][1] + cm[0][1]
+    precision = 42
+    if lower_p != 0:
+        precision = upper_p / lower_p
+    upper_r = cm[1][1]
+    lower_r = cm[1][1] + cm[1][0]
+    recall = 42
+    if lower_r != 0:
+        recall = upper_r / lower_r
+    return (precision, recall)
+from sqlalchemy import create_engine
+from sqlalchemy import MetaData, Table
+from config import rds_connection_string
+engine = create_engine(f'postgresql://{rds_connection_string}')
+metadata = MetaData(engine)
+conn = engine.connect()
+df_ver = pd.read_sql_query('select version from stats_data ORDER BY version DESC LIMIT 1', con=conn)
+version = str(df_ver['version'].max()) + ".h5"
+
+t_model_string = "Resources/models/deep_sentiment_twitter_model_trained_version_"
+c_model_string = "Resources/models/deep_sentiment_composite_model_trained_version_"
+a_model_string = "Resources/models/deep_adjudicator_model_trained_version_"
+
+t_model = t_model_string + version
+c_model = c_model_string + version
+a_model = a_model_string + version
+
+model_list = [t_model, c_model, a_model]
+
+t_vect_string = 'Resources/vectorizers/tweet_vectorizer_version_'
+c_vect_string = 'Resources/vectorizers/composite_vectorizer_version_'
+a_vect_string = 'Resources/vectorizers/adjudication_vectorizer_version_'
+
+version_v = str(df_ver['version'].max()) + ".pickle"
+t_vect = t_vect_string + version_v
+c_vect = c_vect_string + version_v
+a_vect = a_vect_string + version_v
+
+def predictModel(df):
+    with open('Resources/vectorizers/vectorizer.pickle', 'rb') as inp:
+        vectorize = pickle.load(inp)
+        model = load_model('Resources/models/deep_sentiment_model_trained_zenith.h5')
+        predict_me = vectorize.transform(df['joined_lemm']).toarray()
+        return float(model.predict(predict_me)[0][0])
+
+def predictTwtModel(df):
+    with open(t_vect, 'rb') as inp:
+        tweet_vectorizer = pickle.load(inp)
+        model = load_model(t_model)
+        predict_me = tweet_vectorizer.transform(df['joined_lemm']).toarray()
+        return float(model.predict(predict_me)[0][0])
+
+def predictComModel(df):
+    with open(c_vect, 'rb') as inp:
+        composite_vectorizer = pickle.load(inp) 
+        model = load_model(c_model)
+        predict_me = composite_vectorizer.transform(df['joined_lemm']).toarray()
+        return float(model.predict(predict_me)[0][0])
+def predictAdjModel(df):
+    with open(a_vect, 'rb') as inp:
+        composite_vectorizer = pickle.load(inp) 
+        model = load_model(a_model)
+        predict_me = composite_vectorizer.transform([df['joined_lemm']]).toarray()
+        return float(model.predict(predict_me)[0][0])
+
+
+
+
+def model_versions():  
+    is_model_list = []
+    not_model_list = []
+    for i in model_list:
+        if os.path.isfile(i):
+            is_model_list.append(i)
+        else:
+            not_model_list.append(i)
+    steve = len(is_model_list)
+    return(steve,not_model_list)
