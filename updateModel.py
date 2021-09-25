@@ -54,7 +54,7 @@ elif neg > pos:
 elif pos > neg:
     min_count = neg
     
-querry_string_base = 'select joined_lemm, sentiments from tweet_sentiment WHERE tweet_sentiment.sentiments =' 
+querry_string_base = 'select joined_lemm, sentiments, id from tweet_sentiment WHERE tweet_sentiment.sentiments =' 
 neg_string = querry_string_base + ' 0 ORDER BY RANDOM() LIMIT ' + f'{min_count}'
 pos_string = querry_string_base + ' 1 ORDER BY RANDOM() LIMIT ' + f'{min_count}'
 model_df = pd.concat([pd.read_sql_query(neg_string, con=engine), pd.read_sql_query(pos_string, con=engine)])
@@ -118,7 +118,7 @@ neg_composite_string = querry_string_base + ' 0 ORDER BY RANDOM() LIMIT 1250'
 pos_composite_string = querry_string_base + ' 1 ORDER BY RANDOM() LIMIT 1250'
 tweet_composite_df = pd.concat([pd.read_sql_query(neg_composite_string, con=engine), pd.read_sql_query(pos_composite_string, con=engine)])
 
-review_composite_df = pd.read_sql_query('select joined_lemm, sentiments from sentiment_data ORDER BY RANDOM() LIMIT 2500', con=engine)
+review_composite_df = pd.read_sql_query('select joined_lemm, sentiments, id from sentiment_data ORDER BY RANDOM() LIMIT 2500', con=engine)
 
 final_composite_df = pd.concat([tweet_composite_df, review_composite_df])
 
@@ -277,7 +277,19 @@ v_functions.plot_cm("Composite Confusion Matrix",v_functions.cmFile_com,y_actual
 v_functions.plot_cm("Adjudicator Confusion Matrix", v_functions.cmFile_adj,y_actual_adj,x_predict_adj)
 
 
-
+def pre_rec(y_actual,x_predict):
+    cm = confusion_matrix(y_actual,x_predict > .5)
+    upper_p = cm[1][1]
+    lower_p = cm[1][1] + cm[0][1]
+    precision = 42
+    if lower_p != 0:
+        precision = upper_p / lower_p
+    upper_r = cm[1][1]
+    lower_r = cm[1][1] + cm[1][0]
+    recall = 42
+    if lower_r != 0:
+        recall = upper_r / lower_r
+    return (precision, recall)
 
 
 
@@ -325,7 +337,7 @@ if steve != 0:
     x_predict_com_real = df2['predicted_sentiments_com']
     y_actual_real = df2['sentiments']
 
-    from v_functions import pre_rec
+
 
     precision_adj_real, recall_adj_real = pre_rec(y_actual_adj_real,x_predict_adj_real)
 
@@ -437,6 +449,10 @@ with conn:
         # "vectorizer_adj":adjudication_vectorizer,
         }])
 
-if batch_df['batch_max']%20 != 0:
+
+if steve == 0:
+    import tweet
+    tweet.api_call
+elif batch_df['batch_max']%20 != 0:
     import tweet
     tweet.api_call

@@ -227,19 +227,19 @@ def make_model(train_features, metrics=METRICS, output_bias=None):
 
     return model  
 
-def pre_rec(y_actual,x_predict):
-    cm = confusion_matrix(y_actual,x_predict > .5)
-    upper_p = cm[1][1]
-    lower_p = cm[1][1] + cm[0][1]
-    precision = 42
-    if lower_p != 0:
-        precision = upper_p / lower_p
-    upper_r = cm[1][1]
-    lower_r = cm[1][1] + cm[1][0]
-    recall = 42
-    if lower_r != 0:
-        recall = upper_r / lower_r
-    return (precision, recall)
+# def pre_rec(y_actual,x_predict):
+#     cm = confusion_matrix(y_actual,x_predict > .5)
+#     upper_p = cm[1][1]
+#     lower_p = cm[1][1] + cm[0][1]
+#     precision = 42
+#     if lower_p != 0:
+#         precision = upper_p / lower_p
+#     upper_r = cm[1][1]
+#     lower_r = cm[1][1] + cm[1][0]
+#     recall = 42
+#     if lower_r != 0:
+#         recall = upper_r / lower_r
+#     return (precision, recall)
 from sqlalchemy import create_engine
 from sqlalchemy import MetaData, Table
 from config import rds_connection_string
