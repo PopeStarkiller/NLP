@@ -41,7 +41,10 @@ stop = stopwords.words('english')
 batch_df = pd.read_sql_query('select batch_max, version from stats_data', con=engine)
 steve = len(batch_df)
 version = steve + 1
-
+version_v = str(version) + ".pickle"
+t_vect_string = 'Resources/vectorizers/tweet_vectorizer_version_'
+c_vect_string = 'Resources/vectorizers/composite_vectorizer_version_'
+a_vect_string = 'Resources/vectorizers/adjudication_vectorizer_version_'
 
 neg = len(pd.read_sql_query('select sentiments from tweet_sentiment WHERE tweet_sentiment.sentiments = 0 LIMIT 2500', con=engine))
 pos = len(pd.read_sql_query('select sentiments from tweet_sentiment WHERE tweet_sentiment.sentiments = 1 LIMIT 2500', con=engine))
@@ -80,7 +83,8 @@ norm = Normalizer().fit(vectorized_train)
 norm_vectorized_train = norm.transform(vectorized_train)
 norm_vectorized_test = norm.transform(vectorized_test)
 norm_vectorized_val = norm.transform(vectorized_val)
-tweet_vectorizer = pickle.dump(vectorizer, open("tweet_vectorizer.pickle", "wb"))
+t_vect = t_vect_string + version_v
+tweet_vectorizer = pickle.dump(vectorizer, open(t_vect, "wb"))
 
 train_labels_twt = np.array(y_train)
 bool_train_labels_twt = train_labels_twt != 0
@@ -143,7 +147,8 @@ norm = Normalizer().fit(vectorized_train)
 norm_vectorized_train = norm.transform(vectorized_train)
 norm_vectorized_test = norm.transform(vectorized_test)
 norm_vectorized_val = norm.transform(vectorized_val)
-composite_vectorizer = pickle.dump(vectorizer, open("composite_vectorizer.pickle", "wb"))
+c_vect = c_vect_string + version_v
+composite_vectorizer = pickle.dump(vectorizer, open(c_vect, "wb"))
 
 train_labels_com = np.array(y_train)
 bool_train_labels_com = train_labels_com != 0
@@ -215,7 +220,8 @@ norm = Normalizer().fit(vectorized_train)
 norm_vectorized_train = norm.transform(vectorized_train)
 norm_vectorized_test = norm.transform(vectorized_test)
 norm_vectorized_val = norm.transform(vectorized_val)
-adjudication_vectorizer = pickle.dump(vectorizer, open("adjudication_vectorizer.pickle", "wb"))
+a_vect = a_vect_string + version_v
+adjudication_vectorizer = pickle.dump(vectorizer, open(a_vect, "wb"))
 
 train_labels_adj = np.array(y_train)
 bool_train_labels_adj = train_labels_adj != 0
