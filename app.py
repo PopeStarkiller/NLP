@@ -55,7 +55,7 @@ def statistics():
 @app.route("/load_tweet")
 def load_tweet():
 
-
+	tweet_dict = {}
 	conn = engine.connect()
 	session = Session(bind=engine)
 	available_tweets = len(pd.read_sql_query('select * from tweet_data WHERE tweet_data.holder = 1', con=conn))
@@ -68,10 +68,13 @@ def load_tweet():
 	df_ver = pd.read_sql_query('select version from stats_data ORDER BY version DESC LIMIT 1', con=conn)
 	# version = str(df_ver['version'].max()) + ".h5"
 	stats_len = len(df_ver)
+	print("grab")
 	if stats_len > 0:
 		from v_functions import model_versions
 		length, err_list = model_versions()
+		print("len > 0")
 		if length != 3:
+			print("len != 3")
 			err_string = "The version of your model(s) is not compatible.  The model(s) that need(s) correcting is/are"
 			for i in err_list:
 				err_string += " " + i
@@ -81,6 +84,13 @@ def load_tweet():
 			}
 		else:
 			predicted_sentiments_adj = predictAdjModel(df)
+			tweet_dict = {
+			"id":df['id'],
+			"tweet":df['tweet'],
+			"joined_lemm":df['joined_lemm'],
+			"batch":df['batch'],
+			"predicted_sentiments_adj":predicted_sentiments_adj
+			}
 	else:
 		tweet_dict = {
 			"id":df['id'],
