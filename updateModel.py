@@ -8,7 +8,7 @@ import string
 from v_functions import METRICS, make_model, early_stopping
 from nltk.corpus import stopwords
 import keras.metrics
-from sqlalchemy import Table, Column, String, MetaData, Date, create_engine, insert, Float, SmallInteger
+from sqlalchemy import Table, Column, String, MetaData, Date, create_engine, insert, Float, SmallInteger, update
 from sqlalchemy.orm import Session
 from sklearn.model_selection import train_test_split
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -455,10 +455,13 @@ with conn:
         # "vectorizer_adj":adjudication_vectorizer,
         }])
 
-
-if steve == 0:
-    import tweet
-    tweet.api_call
-elif batch_df['batch_max']%20 != 0:
-    import tweet
-    tweet.api_call
+batch_max_ = pd.read_sql_query('select batch from tweet_data', con=engine)['batch'].max()
+next_batch = batch_max_ + 1
+if (steve == 0 and batch_max_ < 20) or (steve > 0 and batch_max_%20 != 0):
+    conn = engine.connect()
+    batch_update = (
+    update(tweet_data).
+    where(tweet_data.c.batch == batch_max_).
+    values(batch=next_batch)
+    )
+    conn.execute(batch_update)
