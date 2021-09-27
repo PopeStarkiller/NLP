@@ -37,9 +37,9 @@ tweet_data = Table('tweet_data', metadata, autoload=True, autoload_with=engine)
 wn = nltk.WordNetLemmatizer()
 string.punctuation
 stop = stopwords.words('english')
-
-batch_max_ = pd.read_sql_query('select batch from tweet_data where holder == 0', con=engine)['batch'].max()
-tester = len(batch_max_)
+batch_max_df = pd.read_sql_query('select batch from tweet_data where holder = 0', con=engine)
+batch_max_ = batch_max_df['batch'].max()
+tester = len(batch_max_df)
 
 
 batch_df = pd.read_sql_query('select batch_max, version from stats_data', con=engine)
