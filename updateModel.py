@@ -38,6 +38,10 @@ wn = nltk.WordNetLemmatizer()
 string.punctuation
 stop = stopwords.words('english')
 
+batch_max_ = pd.read_sql_query('select batch from tweet_data where holder == 0', con=engine)['batch'].max()
+tester = len(batch_max_)
+
+
 batch_df = pd.read_sql_query('select batch_max, version from stats_data', con=engine)
 steve = len(batch_df)
 version = steve + 1
@@ -308,7 +312,10 @@ def pre_rec(y_actual,x_predict):
 date = datetime.now()
 
 batch_min = 1
-batch_max = pd.read_sql_query('select batch from tweet_sentiment', con=engine)['batch'].max()
+batch_max = pd.read_sql_query('select batch from tweet_data', con=engine)['batch'].max()
+
+if tester == 0:
+    batch_max -= 1
 if steve != 0:
 
     batch_min += batch_df['batch_max'].max()
@@ -455,9 +462,10 @@ with conn:
         # "vectorizer_adj":adjudication_vectorizer,
         }])
 
-batch_max_ = pd.read_sql_query('select batch from tweet_data', con=engine)['batch'].max()
 next_batch = batch_max_ + 1
-if (steve == 0 and batch_max_ < 20) or (steve > 0 and batch_max_%20 != 0):
+if tester > 0:
+    d = tweet_data.delete().where(tweet_data.c.holder == 0)
+    d.execute()
     conn = engine.connect()
     batch_update = (
     update(tweet_data).
