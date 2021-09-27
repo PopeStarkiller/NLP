@@ -60,7 +60,7 @@ def load_tweet():
 	session = Session(bind=engine)
 	available_tweets = len(pd.read_sql_query('select * from tweet_data WHERE tweet_data.holder = 1', con=conn))
 	# session.close()
-	if available_tweets <= 5:
+	if available_tweets == 0:
 		tweet.api_call()
 	df = pd.read_sql_query('select * from tweet_data WHERE tweet_data.holder = 1', con=conn)
 	df = df.iloc[0]
