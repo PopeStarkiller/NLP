@@ -347,22 +347,51 @@ def neutralupdate():
 	return {}
 @app.route("/data")
 def datacalled():
-	# import stats
-	# session = Session(bind=engine)
-	# vals = session.query(tweet_data).filter(tweet_data.c.sentiments != 9).all()
-	# data_list = []
-	# holder = len(vals)
-	# for i in range(holder):
-	# 	data_list.append({
-    #         'id': vals[i][0],
-	# 		'tweet': vals[i][1],
-	# 		'sentiments': vals[i][2],
-	# 		'predicted_sentiments_rd': vals[i][3],
-	# 		'date': vals[i][4],
-	# 	})
+	conn = engine.connect()
+	stats_df = pd.read_sql_query('select * from stats_data ORDER BY version DESC LIMIT 10', con=conn)
+	steve = stats_df.columns
+	columns_list = []
+	for i in steve:
+		columns_list.append(i)
+	c_list_f = columns_list[1:19]
+	stats_dict = {}
+	c_len = len(c_list_f)
+	versions = stats_df['version']
+	v_len = len(versions)
+	v_str = "version_"
+	for i in range(v_len):
+		temp_dict = {}
+		vers = v_str + str(versions[i])
+		for j in range(c_len):
+			temp_dict[c_list_f[j]] = stats_df[c_list_f[j]][i]
+		stats_dict[vers] = temp_dict
+	return json.dumps(stats_dict, cls=NpEncoder, default=str)
 
-	# return jsonify(data_list)
-	return {}
+
+@app.route("/perf_data")
+def perfdatacalled():
+	conn = engine.connect()
+	performance_df = pd.read_sql_query('select * from performance_stats ORDER BY version DESC LIMIT 10', con=conn).fillna(0)
+	stats_len = len(performance_df)
+	steve = performance_df.columns
+	version_str = "version"
+	columns_list = []
+	for i in steve:
+		columns_list.append(i)
+	c_list_f = columns_list[1:19]
+	stats_dict = {}
+	c_len = len(c_list_f)
+	versions = performance_df['version']
+	v_len = len(versions)
+	v_str = "version_"
+	for i in range(v_len):
+		temp_dict = {}
+		vers = v_str + str(versions[i])
+		for j in range(c_len):
+			temp_dict[c_list_f[j]] = performance_df[c_list_f[j]][i]
+		stats_dict[vers] = temp_dict     
+        
+	return json.dumps(stats_dict, cls=NpEncoder, default=str)
 
 if __name__ == "__main__":
 	app.run(debug=True)
