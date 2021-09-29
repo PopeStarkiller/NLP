@@ -68,7 +68,6 @@ def load_tweet():
 	df_ver = pd.read_sql_query('select version from stats_data ORDER BY version DESC LIMIT 1', con=conn)
 	# version = str(df_ver['version'].max()) + ".h5"
 	stats_len = len(df_ver)
-	print("grab")
 	if stats_len > 0:
 		from v_functions import model_versions
 		length, err_list = model_versions()
@@ -106,7 +105,10 @@ def load_tweet():
 @app.route("/positive_update", methods = ['POST'])
 def positive_update():
 	# Try to grab values, will catch if someone clicks on face before a tweet loads
-	if os.path.isfile("Resources/models/deep_adjudicator_model_trained.h5"):
+	conn = engine.connect()
+	df_ver = pd.read_sql_query('select version from stats_data ORDER BY version DESC LIMIT 1', con=conn)
+	stats_len = len(df_ver)
+	if stats_len > 0:
 		df = pd.DataFrame()
 		df['tweet'] = [request.form['tweet']]
 		df['joined_lemm'] = [request.form['joined_lemm']]
@@ -198,7 +200,10 @@ def positive_update():
 
 @app.route("/negative_update", methods = ['POST'])
 def negative_update():
-	if os.path.isfile("Resources/models/deep_adjudicator_model_trained.h5"):
+	conn = engine.connect()
+	df_ver = pd.read_sql_query('select version from stats_data ORDER BY version DESC LIMIT 1', con=conn)
+	stats_len = len(df_ver)
+	if stats_len > 0:
 		df = pd.DataFrame()
 		df['tweet'] = [request.form['tweet']]
 		df['joined_lemm'] = [request.form['joined_lemm']]
@@ -287,7 +292,10 @@ def negative_update():
 	return {}
 @app.route("/neutral_update", methods = ['POST'])
 def neutralupdate():
-	if os.path.isfile("Resources/models/deep_adjudicator_model_trained.h5"):
+	conn = engine.connect()
+	df_ver = pd.read_sql_query('select version from stats_data ORDER BY version DESC LIMIT 1', con=conn)
+	stats_len = len(df_ver)
+	if stats_len > 0:
 		predicted_sentiments_adj = request.form.get('predicted_sentiments_adj', type=float)
 		tweet_dict = {
 		"id": request.form['id'],
